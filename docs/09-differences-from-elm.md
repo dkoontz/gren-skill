@@ -238,5 +238,4 @@ When converting Elm code to Gren:
 
 ## Cross-references
 
-- Where things live now: `01-values-and-functions.md` through `08-task-ports.md`
-- Elm equivalents are noted inline throughout those docs.
+- Where things live now: `01-values-and-functions.md` through `08-task-ports.md` — those docs describe Gren on its own terms; this doc is the single place that maps Elm onto them.

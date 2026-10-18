@@ -98,7 +98,7 @@ type ConnectionState
 
 This trips up newcomers:
 
-- `type alias Name = …` gives a **convenient name** to an existing type (often a record). It does not create a new type. Gren does **not** auto-generate a constructor for record aliases (this differs from Elm — see `09-differences-from-elm.md`).
+- `type alias Name = …` gives a **convenient name** to an existing type (often a record). It does not create a new type and defines **no constructor function** — build records with the `{ … }` literal.
 
   ```gren
   type alias Point = { x : Float, y : Float }
@@ -124,7 +124,7 @@ Unit shows up rarely in everyday code; you will most often see it in ports or lo
 
 ## Tuple types — don't
 
-Gren removed tuples. Use a record with named fields instead:
+Gren has no tuple types. Use a record with named fields instead:
 
 ```gren
 -- not valid Gren
@@ -134,7 +134,7 @@ pair : ( Int, String )
 type alias Pair = { quantity : Int, label : String }
 ```
 
-See `09-differences-from-elm.md` for the rationale.
+Tuples are standard in other ML-family languages (Haskell, OCaml, F#) and in Elm, so readers often reach for them; in Gren the record is always the answer.
 
 ## Annotations you will commonly see
 
@@ -147,7 +147,7 @@ parseCommand : String -> Result InvalidCommand Command
 navigate : Location -> Direction -> Maybe Location
 ```
 
-The `{ model : Model, command : Cmd Msg }` is the anonymous record `update` returns in **every** Gren program, Node or browser. Gren has no tuples, so it cannot return the `(Model, Cmd Msg)` pair that Elm uses — both `Node.defineProgram` and `Browser.element` (and friends) use the same anonymous-record shape.
+The `{ model : Model, command : Cmd Msg }` is the anonymous record `update` returns in **every** Gren program, Node or browser — both `Node.defineProgram` and `Browser.element` (and friends) use the same anonymous-record shape. Gren has no tuples, so multi-value results always travel in named record fields.
 
 ## When you can skip annotations
 
@@ -160,8 +160,8 @@ You can omit annotations entirely; the compiler infers everything. But:
 
 - Forgetting to parenthesise a function-typed argument: `map : a -> b -> Array a -> Array b` is **wrong** for the usual `map`. Write `(a -> b) -> Array a -> Array b`.
 - Mixing `=` and `:` — annotation line uses `:`, definition line uses `=`.
-- Writing `List Int` — Gren has no `List` type by default; the sequential data structure is `Array Int`. See `04-data-structures.md`.
-- Expecting `()` for unit. Use `{}`.
+- Writing `List Int` — Gren has no `List` type; the sequential data structure is `Array Int`. See `04-data-structures.md`.
+- Writing `()` for unit — in Gren unit is the empty record `{}`.
 
 ## Cross-references
 

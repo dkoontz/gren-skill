@@ -1,6 +1,6 @@
 # 08 — Tasks and Ports
 
-`Task` is Gren's type for asynchronous, fallible computation. Ports are its mechanism for talking to JavaScript. This doc covers both, plus the **concurrency semantics** that differ from Elm.
+`Task` is Gren's type for asynchronous, fallible computation. Ports are its mechanism for talking to JavaScript. This doc covers both, plus the **concurrency semantics**, which are Gren's own and easy to guess wrong.
 
 ## The `Task` type
 
@@ -69,7 +69,7 @@ You can also build tasks from pure values and chains (`gren-lang/core` 7.4.2):
 | `Task.await`        | `Task x a -> (a -> Task x b) -> Task x b`                     | Same semantics as `andThen` but with the callback **last**, so an imperative-style chain reads top-to-bottom: `Task.await firstTask <| \result -> nextTask result` |
 | `Task.onError`      | `(x -> Task y a) -> Task x a -> Task y a`                     | Recover from a failure mid-chain       |
 
-## Concurrency — important difference from Elm
+## Concurrency: parallel by default
 
 Tasks combined with `Task.map2`, `Task.map3`, or `Task.andMap` **run concurrently by default**. From `gren-lang/core` 7.4.2's `Task.map2` docs: *"`map2` starts both requests concurrently and if either of them fails, the whole thing fails! If one request fails and the other is still in-flight, the in-flight task will be automatically cancelled and cleaned up."*
 
@@ -99,7 +99,7 @@ Task.concurrent [ taskA, taskB, taskC ]
 
 (`Task.concurrent` also cancels any in-flight tasks if one fails; see the 7.4.2 docs.)
 
-This is the opposite of Elm's default (where `Task.attempt` sequences). When a user complains that "things are running in the wrong order", suspect this. See `09-differences-from-elm.md`.
+This is Gren's semantics, and they differ from Elm, where combined tasks sequence. When a user complains that "things are running in the wrong order", this is the cause. See `09-differences-from-elm.md`.
 
 ## Ports — talking to JavaScript
 
@@ -125,7 +125,7 @@ port clockTicks : (Int -> msg) -> Sub msg
 
 JavaScript pushes values via `app.ports.clockTicks.send(42)`.
 
-These two are the **classic** port style inherited from Elm. They work, but you end up writing two declarations per effect and managing the lifecycle on the JS side.
+These two are the **classic** one-way port style. They work, but you end up writing two declarations per effect and managing the lifecycle on the JS side.
 
 ### 3. Task ports (preferred)
 
@@ -173,5 +173,5 @@ port fetchUser : String -> Task Json.Decode.Value User
 
 - How `Cmd`/`Sub` plug into `update`: `07-commands-and-subs.md`
 - `Result`, which `Task` resembles: `06-errors.md`
-- Concurrency changes from Elm: `09-differences-from-elm.md`
+- Gren's default task concurrency vs Elm's: `09-differences-from-elm.md`
 - Concrete Node examples in the sample program: `src/Main.gren` (`init`, `respond`, `subscriptions`)

@@ -31,8 +31,8 @@ This directory holds focused reference documents the **Gren Coach** agent loads 
 
 ## Conventions used across these docs
 
-- All code blocks marked `gren` are Gren source. Where contrast is needed, `elm` and `javascript` blocks show what **not** to write.
-- "Gren" always means the Gren language, never Elm.
+- All code blocks marked `gren` are Gren source; `javascript` blocks show JS-side port handlers. Fenced `elm` blocks appear only in `09-differences-from-elm.md`.
+- These docs are a **Gren reference**, not an Elm-diff. Present syntax and APIs as Gren's own; mention Elm (or other ML-family languages) only where confusion is likely, with the Gren form first. `09-differences-from-elm.md` owns the full comparison.
 - Examples marked "from a project" come from the Node-based sample in this repo (`src/Main.gren`); line numbers track that file. See the callout above.
 - Cross-references between docs use the form `see 04-data-structures.md § Custom types`.
 

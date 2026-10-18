@@ -5,7 +5,7 @@ description: Gren language reference for reading, writing, and explaining Gren c
 
 # Gren Language
 
-You now have reference knowledge of the **Gren** programming language. Gren is a pure functional language that compiles to JavaScript. Gren is similar to Elm but diverges significantly in its libraries and when/is syntax — **Many Elm constructs do not compile in Gren.** Never silently substitute Elm idioms.
+You now have reference knowledge of the **Gren** programming language. Gren is a pure functional language that compiles to JavaScript. Present and write syntax as **Gren syntax** — Gren has evolved into its own language; do not silently substitute constructs from Elm or other ML-family languages (many do not compile in Gren; see `./docs/09-differences-from-elm.md`).
 
 ## Characteristics
 
@@ -85,9 +85,9 @@ Arrows are right-associative (`Int -> Int -> Int` means `Int -> (Int -> Int)`). 
 
 **Type variables:** lowercase (`a`, `b`, `msg`). Constrained: `number` (Int/Float, admits arithmetic), `comparable` (Int/Float/Char/String/Array of those, admits comparison and is required for Dict keys/Set members), `appendable` (String/Array, admits `++`).
 
-**`type alias`** names an existing type (often a record) — it does **not** create a constructor (unlike Elm). **`type`** creates a new type with constructors.
+**`type alias`** names an existing type (often a record) — it does **not** create a constructor. **`type`** creates a new type with constructors.
 
-**Unit type is `{}`**, not `()`. The unit value is also `{}`.
+**Unit is `{}`** — the empty record is both the unit type and the unit value. (Other ML-family languages such as Haskell and Elm use `()`; Gren does not.)
 
 ## Decisions: `if` and `when`
 
@@ -227,27 +227,22 @@ update : Msg -> Model -> { model : Model, command : Cmd Msg }
 
 **Ports** are the only way to call JavaScript. Three styles: outgoing `Cmd` ports, incoming `Sub` ports (classic, two declarations per effect), and **task ports** (`port saveToDB : String -> Task Json.Decode.Value Int` — request/response in one declaration, preferred for request/response interop).
 
-## Critical differences from Elm
+## Syntax gotchas
 
-If you (or code you're reading) come from Elm, these bite most often:
+The Gren forms that most often surprise readers coming from other ML-family languages (especially Elm):
 
-| Elm                          | Gren                                   |
-| ---------------------------- | -------------------------------------- |
-| `case ... of`                | `when ... is`                          |
-| `( a, b )` tuples            | record with named fields               |
-| `List a`                     | `Array a` (same `[ ... ]` literal)     |
-| `type P = P String Int`      | `type P = P { name, age }` (max 1 arg) |
-| `filter`                     | `keepIf`                               |
-| `filterMap` / `concatMap`    | `mapAndKeepJust` / `mapAndFlatten`     |
-| `Dict.insert` / `Set.insert` | `Dict.set` / `Set.set`                 |
-| `Dict.size` / `Set.size`     | `Dict.count` / `Set.count`             |
-| record auto-constructor      | (none — use `{ ... }` literal)         |
-| `map4`/`map5`...             | `map` + `andMap`                       |
-| `()` unit                    | `{}`                                   |
-| `(model, cmd)` from update   | `{ model, command }` record            |
-| `Task.attempt` sequences     | `Task.map2`+ run **concurrently**      |
+- Pattern matching is `when … is` — `case … of` does not exist in Gren.
+- **No tuples.** Use records with named fields everywhere, including `update`'s return: `{ model = …, command = … }`.
+- The sequential structure is `Array a` (literal `[ 1, 2, 3 ]`); **there is no `List`.**
+- Custom type constructors take **0 or 1 argument** — wrap multiple values in a record.
+- Record aliases define **no constructor function**; build records with the `{ … }` literal.
+- Filtering is `keepIf`; combine-and-filter is `mapAndKeepJust`; flatten-mapping is `mapAndFlatten`.
+- `Dict.set` / `Set.set` for add-or-replace; `Dict.count` / `Set.count` for size.
+- Unit is `{}`, not `()`.
+- No `map4`/`map5` in core modules — use `map` + `andMap`.
+- `Task.map2`/`map3`/`andMap` run their tasks **concurrently**.
 
-What did **not** change: pure functional `Model`/`Msg`/`update`/`view` architecture, immutability, `Maybe`/`Result`, currying, `|>`, the `module ... exposing`/`import` system, type-annotation syntax.
+The `Model`/`Msg`/`update`/`view` architecture, immutability, `Maybe`/`Result`, currying, `|>`, the `module … exposing`/`import` system, and annotation syntax are standard Gren. For the full Elm-to-Gren mapping, see `./docs/09-differences-from-elm.md`.
 
 ## Reading dependency source
 

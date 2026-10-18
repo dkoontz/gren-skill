@@ -17,7 +17,7 @@ Both runtimes expect the same three things from you:
 2. **`update`** — given a message and the current model, produce a new model and a new command.
 3. **`subscriptions`** — given the current model, declare which external events you want delivered as messages. (Not present in `Browser.sandbox`, which has no effects.)
 
-This is the same shape Elm calls "The Elm Architecture". Gren keeps it; the difference is the concrete types and the runtime packages.
+This `init`/`update`/`subscriptions` loop is the architecture of every Gren program, Node or browser.
 
 ## `Cmd msg`
 

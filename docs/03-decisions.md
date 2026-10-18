@@ -23,19 +23,15 @@ The condition must be a `Bool`. There are no truthy/falsy values — `0`, `""`, 
 
 ## `when … is` (pattern matching)
 
-Gren renamed Elm's `case … of` to `when … is`. Same semantics, different keywords:
+`when … is` is Gren's pattern match:
 
 ```gren
--- Elm (does NOT work in Gren)
-case maybeValue of
-    Just x -> x
-    Nothing -> default
-
--- Gren
 when maybeValue is
     Just x -> x
     Nothing -> default
 ```
+
+The keywords are `when` and `is` — `case … of` (the form used by Elm and other ML-family languages) does not exist in Gren.
 
 `when` is the workhorse of Gren code. It branches on **patterns**, not just booleans. Each branch is `pattern -> expression`. Indentation lines up the arrows.
 
@@ -110,7 +106,7 @@ describeMixture mixture =
         _ -> "Has both ingredients"
 ```
 
-Gren extends record pattern matching beyond what Elm offers — see `09-differences-from-elm.md`.
+Record patterns may name any subset of the record's fields — the pattern matches as long as those fields hold. This is Gren-specific: most other ML-family languages require full destructuring.
 
 ### Wildcard `_`
 
@@ -134,7 +130,7 @@ when result is
 
 ## No guards
 
-Gren does **not** support `| predicate ->` guards inside `when` (Elm does not either). If you want a conditional branch, use `if` inside the branch body, or restructure the data so the predicate becomes a pattern.
+Gren does **not** support `| predicate ->` guards inside `when` (unlike Haskell or OCaml). If you want a conditional branch, use `if` inside the branch body, or restructure the data so the predicate becomes a pattern.
 
 ```gren
 -- not valid
@@ -174,4 +170,4 @@ This is idiomatic when you do not need to name the intermediate value.
 
 - Data shapes you can match against: `04-data-structures.md`
 - `Maybe`/`Result` semantics: `06-errors.md`
-- The `case of` → `when is` rename from Elm: `09-differences-from-elm.md`
+- Keyword renames and the full Elm comparison: `09-differences-from-elm.md`

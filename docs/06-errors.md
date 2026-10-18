@@ -57,7 +57,7 @@ Common `Maybe` helpers (`gren-lang/core` 7.4.2):
 
 ### Combining multiple `Maybe`s
 
-Gren removed `map4`, `map5`, and higher-arity `mapN` from most modules. Use `andMap` instead:
+Gren's core modules define `mapN` only up to arity 3. To combine more than three, start from `map` and pipe through `andMap`:
 
 ```gren
 -- not valid Gren
@@ -71,7 +71,7 @@ Maybe.map buildRecord
     |> Maybe.andMap maybeD
 ```
 
-`map2`/`map3` still exist for small cases. See `09-differences-from-elm.md`.
+`map2`/`map3` still exist for small cases.
 
 ## The `Result` type
 
@@ -213,7 +213,7 @@ update msg model =
                     }
 ```
 
-Note the anonymous-record return shape — Gren has no tuples, so `update` does not return `(model, cmd)` the way Elm does (see `02-type-signatures.md`, `09-differences-from-elm.md`).
+Note the anonymous-record return shape — `update` returns `{ model = …, command = … }`; Gren has no tuples, so multi-value results always travel in named fields (see `02-type-signatures.md`).
 
 ## Quick decision guide
 
@@ -229,4 +229,4 @@ Note the anonymous-record return shape — Gren has no tuples, so `update` does 
 - Pattern matching on these types: `03-decisions.md`
 - The custom type machinery: `04-data-structures.md`
 - Where errors from I/O actually live: `07-commands-and-subs.md`, `08-task-ports.md`
-- Higher-arity `mapN` removal and `andMap`: `09-differences-from-elm.md`
+- The Elm equivalents of everything renamed or removed above: `09-differences-from-elm.md`

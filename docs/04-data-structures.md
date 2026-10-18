@@ -25,9 +25,9 @@ user =
 
 Field order in a literal does not need to match the alias, but every field must be present.
 
-### No auto-constructor
+### Construction is the literal
 
-Elm auto-generates a constructor function from a record type alias (`User id name email`). **Gren does not.** Always build records with the literal `{ … }` syntax. See `09-differences-from-elm.md`.
+Records are always built with the `{ … }` literal syntax. A `type alias` for a record does **not** define a constructor function — some other ML-family languages (Elm, OCaml) generate one; Gren does not.
 
 ### Field access
 
@@ -54,14 +54,14 @@ updatedUser = { user | name = "Alicia" }
 multiUpdate = { user | name = "Alicia", email = newEmail }
 ```
 
-Gren extends record update beyond Elm: the left-hand side of `|` can be **any expression** that evaluates to a record, not just a variable name:
+The left-hand side of `|` can be **any expression** that evaluates to a record, not just a variable name:
 
 ```gren
 updated = { SomeModule.getRecord | value = "new" }
 updated = { getConfig env | timeout = 30 }
 ```
 
-See `09-differences-from-elm.md` for the contrast.
+(In Haskell and Elm the left-hand side must be a variable name, so readers porting code often add an extra `let` binding that Gren does not need.)
 
 ### Anonymous records in signatures
 
@@ -211,7 +211,7 @@ flush     : Machine Closed -> Int
 
 The limit is informative: a phantom parameter is erased, so you cannot `when` on it, and it constrains *which phase*, not *which variant*. Use it when many functions accept different subsets of one type's states; use the subtype split above when one function needs a fixed variant subset.
 
-**`Never` (mostly encountered, rarely deployed).** `Basics.Never` has no values, so a variant carrying one is unconstructable. `Basics.never : Never -> a` exists to eliminate it. As with Elm's `Html Never` idiom, `Never` is useful in *argument* position and a liability in return position — prefer subtypes or phantom phases.
+**`Never` (mostly encountered, rarely deployed).** `Basics.Never` has no values, so a variant carrying one is unconstructable. `Basics.never : Never -> a` exists to eliminate it. `Never` is useful in *argument* position to mean "impossible here" — e.g. `Task.execute : Task Never a -> Cmd msg` demands a task that cannot fail by type — and a liability in return position; prefer subtypes or phantom phases.
 
 Prefer opaque types (above) when the constraint is a value's *contents*; prefer this section when the constraint is *which variant or phase* a position may hold. They combine: an opaque newtype wrapping a narrowed sum type is a fine end state.
 
@@ -283,7 +283,7 @@ parse raw =
 
 A public `{ from : Posix, until : Posix }` record would let anyone build a reversed window; the opaque wrapper is what makes that unrepresentable. The three `when` branches are exhaustive over the two `Maybe` fields — no wildcard needed (Gren record patterns may omit fields, verified on 0.6.5).
 
-**No `Date` module in core.** Time-related types in `gren-lang/core` are in `Time`: `Posix`, `Zone`, `Month`, `Weekday`, plus `posixToMillis`/`millisToPosix`. There is **no** `Date.fromString` like Elm has — Elm's `Date` module does not exist in Gren. ISO-8601 parsing is a project-level (or third-party-package) concern; the idiomatic home for it is an opaque `Timestamp` wrapper around `Time.Posix` whose only public entry point is a validating `fromIsoString : String -> Maybe Timestamp` — which is exactly this section's pattern applied to the field type itself. Do not silently substitute Elm's `Date` (see `09-differences-from-elm.md`).
+**Time lives in `Time`; there is no `Date` module.** `gren-lang/core` exposes `Posix`, `Zone`, `Month`, `Weekday`, plus `posixToMillis`/`millisToPosix` from `Time`. String-to-time parsing (e.g. ISO-8601) is not in core — it is a project-level (or third-party-package) concern; the idiomatic home for it is an opaque `Timestamp` wrapper around `Time.Posix` whose only public entry point is a validating `fromIsoString : String -> Maybe Timestamp` — which is exactly this section's pattern applied to the field type itself. Code that expects a `Date.fromString` (the name Elm uses) will not compile — see `09-differences-from-elm.md`.
 
 **JSON boundaries.** `Json.Decode` composes the same way. `Json.Decode` keeps `map2`/`map3`/`map4`/`map5` (the "mapN was removed" rule does **not** apply here — check the pinned version per `10-finding-source.md`), and `andThen` is how a validating opaque constructor gets threaded in:
 
@@ -318,7 +318,7 @@ A value that decodes has passed every check; there is no `Maybe` left to trip ov
 
 ## Arrays
 
-`Array a` is Gren's default sequential data structure — an immutable array, not a linked list. Gren removed `List` (which Elm kept).
+`Array a` is Gren's default sequential data structure — an immutable array. Square brackets always denote an `Array`; there is no linked list.
 
 ### Literal syntax
 
@@ -388,21 +388,19 @@ Things that **do not** exist (common gotchas):
 - **No `Array.count`** — it's `Array.length`.
 - **No `Array.toList` / `fromList`** — `Array` is the default; there is no separate `List` to convert to/from.
 
-### Renamed from Elm
+### Naming
 
-Several functions were renamed for clarity in Gren:
+Gren collection functions are named for exactly what they do:
 
-| Elm (`elm-lang/core`)  | Gren              | Why                                |
-| ------------ | ----------------- | ---------------------------------- |
-| `filter`     | `keepIf`          | Describes what it does             |
-| `filterMap`  | `mapAndKeepJust`  | Describes the two operations       |
-| `concatMap`  | `mapAndFlatten`   | Describes the two operations       |
-| `isEmpty`    | `isEmpty`         | Unchanged                          |
-| `length`     | `length`          | Unchanged                          |
+| Gren              | What it does                                                                  |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `keepIf`          | Keeps the elements that pass a predicate                                        |
+| `mapAndKeepJust`  | Maps to `Maybe` and keeps the `Just` values                                     |
+| `mapAndFlatten`   | Maps each element to an `Array` and flattens the result                         |
+| `isEmpty`         | Whether the array has no elements                                              |
+| `length`          | Number of elements                                                            |
 
-Note: some Elm packages use `flatMap` as an alias; in `elm-lang/core` the function is `concatMap`. Either way, the Gren equivalent is `mapAndFlatten`.
-
-See `09-differences-from-elm.md`.
+If you are reading Elm code, the equivalents are `filter`, `filterMap`, and `concatMap` respectively — none of those names exist in Gren (see `09-differences-from-elm.md`).
 
 ### Example from the project
 
@@ -432,7 +430,7 @@ ages =
         |> Dict.set "bob" 25
 ```
 
-Note the function is **`Dict.set`**, not `Dict.insert`. (Gren's `Dict` and `Set` API both use `set` for the add-or-replace operation. Elm's `Dict.insert` has no exact namesake.) There is no built-in helper for building a `Dict` from a sequence of key/value pairs in 7.4.2; fold explicitly over an array of records:
+The add-or-replace function is **`Dict.set`** — `Dict` and `Set` both use `set`, for consistency across the two modules (`insert` does not exist). There is no built-in helper for building a `Dict` from a sequence of key/value pairs in 7.4.2; fold explicitly over an array of records:
 
 ```gren
 fromKeyedRecords : Array { key : comparable, value : v } -> Dict comparable v
